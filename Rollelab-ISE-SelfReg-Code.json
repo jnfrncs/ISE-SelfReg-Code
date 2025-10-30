@@ -1,0 +1,337 @@
+{
+  "workflow": {
+    "unique_name": "definition_workflow_02QY5FG0O6YFH1qJp9f6V3jduQwVvHQpb9j",
+    "name": "Rollelab-ISE-SelfReg-Code",
+    "title": "Rollelab-ISE-SelfReg-Code",
+    "type": "generic.workflow",
+    "base_type": "workflow",
+    "variables": null,
+    "properties": {
+      "atomic": {
+        "is_atomic": false
+      },
+      "automation_rules": {
+        "type": [
+          "approval_task.rule_event",
+          "schedule.rule_schedule"
+        ]
+      },
+      "delete_workflow_instance": false,
+      "description": "Changing the registration code on ISE guest portal every Monday morning ",
+      "display_name": "Rollelab-ISE-SelfReg-Code",
+      "runtime_user": {
+        "target_default": true
+      },
+      "target": {
+        "no_target": true
+      }
+    },
+    "object_type": "definition_workflow",
+    "actions": [
+      {
+        "unique_name": "definition_activity_02QYMPTD8F3CK6Umbb3G2mDHMabNedZcQTY",
+        "name": "Generic ISE API Request",
+        "title": "Selfreg portal ISE API Request",
+        "type": "ise.invoke_api",
+        "base_type": "activity",
+        "properties": {
+          "_endpoint": "/ers/config/selfregportal/$env.variable_02QYN70EK94BU6EgmR87YokDT4TDZJ7s5zu.env.variable_02QYN70EK94BU6EgmR87YokDT4TDZJ7s5zu$",
+          "_headers": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ],
+          "_method": "GET",
+          "action_timeout": 180,
+          "continue_on_failure": false,
+          "description": "Generic ISE API Request",
+          "display_name": "Selfreg portal ISE API Request",
+          "runtime_user": {
+            "override_target_runtime_user": true,
+            "runtime_user_id": "definition_runtime_user_02QX1Q6C95FWE0w7VtgJ6Umk1Ihi0hHgqJG"
+          },
+          "skip_execution": false,
+          "target": {
+            "override_workflow_target": true,
+            "target_id": "definition_target_02QXXSEFV7WTY1okQgfbwGhKiAxBlTYr1cY"
+          }
+        },
+        "object_type": "definition_activity"
+      },
+      {
+        "unique_name": "definition_activity_02QYP5W4S6SGB3D3eeX9osRnFpk6C5nWS41",
+        "name": "JSONPath Query",
+        "title": "registrationCode JSONPath Query",
+        "type": "corejava.jsonpathquery",
+        "base_type": "activity",
+        "properties": {
+          "action_timeout": 180,
+          "continue_on_failure": false,
+          "description": "JSONPath Query to get value in JSON",
+          "display_name": "registrationCode JSONPath Query",
+          "input_json": "$activity.definition_activity_02QYMPTD8F3CK6Umbb3G2mDHMabNedZcQTY.output.raw_body$",
+          "jsonpath_queries": [
+            {
+              "default_value": "",
+              "jsonpath_query": "$.SelfRegPortal.settings.selfRegPageSettings.registrationCode",
+              "jsonpath_query_name": "lastRegistrationCode",
+              "jsonpath_query_type": "string",
+              "set_default_value": true,
+              "zdate_type_format": "yyyy-MM-dd'T'HH:mm:ssZ"
+            }
+          ],
+          "skip_execution": false
+        },
+        "object_type": "definition_activity"
+      },
+      {
+        "unique_name": "definition_activity_02QYQH1EZFYI87V61Pshxq4x5reOJwuz0yc",
+        "name": "Execute Python Script",
+        "title": "Random generator code",
+        "type": "python3.script",
+        "base_type": "activity",
+        "properties": {
+          "action_timeout": 180,
+          "continue_on_failure": false,
+          "description": "Execute Python Script",
+          "display_name": "Random generator code",
+          "script": "import random, string\n\ndef randomString(length):\n   letters = string.ascii_letters\n   return ''.join(random.choice(letters) for i in range(length))\n\nnewRegistrationCode = randomString(5)",
+          "script_queries": [
+            {
+              "script_query": "newRegistrationCode",
+              "script_query_name": "newRegistrationCode",
+              "script_query_type": "string"
+            }
+          ],
+          "skip_execution": false
+        },
+        "object_type": "definition_activity"
+      },
+      {
+        "unique_name": "definition_activity_02QYR7JAV690N0ZahiBDmfbBW0G8KecHRUY",
+        "name": "Generic ISE API Request",
+        "title": "Selfreg portal ISE API Update",
+        "type": "ise.invoke_api",
+        "base_type": "activity",
+        "properties": {
+          "_body": "{ \n  \"SelfRegPortal\" : {\n    \"settings\" : {\n      \"selfRegPageSettings\" : {\n        \"registrationCode\" : \"$activity.definition_activity_02QYQH1EZFYI87V61Pshxq4x5reOJwuz0yc.output.script_queries.newRegistrationCode$\"\n        }\n    }\n  }\n}",
+          "_endpoint": "/ers/config/selfregportal/$env.variable_02QYN70EK94BU6EgmR87YokDT4TDZJ7s5zu.env.variable_02QYN70EK94BU6EgmR87YokDT4TDZJ7s5zu$",
+          "_headers": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "_method": "PATCH",
+          "action_timeout": 180,
+          "continue_on_failure": false,
+          "description": "Generic ISE API Request",
+          "display_name": "Selfreg portal ISE API Update",
+          "runtime_user": {
+            "override_target_runtime_user": true,
+            "runtime_user_id": "definition_runtime_user_02QX1Q6C95FWE0w7VtgJ6Umk1Ihi0hHgqJG"
+          },
+          "skip_execution": false,
+          "target": {
+            "override_workflow_target": true,
+            "target_id": "definition_target_02QXXSEFV7WTY1okQgfbwGhKiAxBlTYr1cY"
+          }
+        },
+        "object_type": "definition_activity"
+      },
+      {
+        "unique_name": "definition_activity_02QYLB2MBFA4K4Q5CaO3zf9Nwa0J2DcU55E",
+        "name": "HTTP Request",
+        "title": "BOT Request",
+        "type": "web-service.http_request",
+        "base_type": "activity",
+        "properties": {
+          "action_timeout": 180,
+          "allow_auto_redirect": true,
+          "allow_headers_redirect": false,
+          "body": "{\n    \"roomId\": \"Y2lzY29zcGFyazovL3VzL1JPT00vZDE4MzE2ZTAtMTQzYS0xMWViLTgzZTUtMjlkNDA5Zjg1NTA3\",\n    \"text\": \"Here was the former registration code: $activity.definition_activity_02QYP5W4S6SGB3D3eeX9osRnFpk6C5nWS41.output.jsonpath_queries.lastRegistrationCode$, and the new one : $activity.definition_activity_02QYQH1EZFYI87V61Pshxq4x5reOJwuz0yc.output.script_queries.newRegistrationCode$\"\n}",
+          "content_type": "application/json",
+          "continue_on_error_status_code": false,
+          "continue_on_failure": false,
+          "custom_headers": [
+            {
+              "name": "Authorization",
+              "value": "Bearer $env.variable_02QYLJRMMZ2XP0bfgB3z5SAXXGyt9RZpGim.env.variable_02QYLJRMMZ2XP0bfgB3z5SAXXGyt9RZpGim$"
+            }
+          ],
+          "description": "HTTP BOT Request",
+          "display_name": "BOT Request",
+          "method": "POST",
+          "relative_url": "messages",
+          "runtime_user": {
+            "target_default": true
+          },
+          "skip_execution": false,
+          "target": {
+            "override_workflow_target": true,
+            "target_id": "definition_target_02QYLF02C6XCH3J0Fttx8ovUCGDpoJUDLMi"
+          }
+        },
+        "object_type": "definition_activity"
+      }
+    ],
+    "categories": [
+      "category_1BMfMXSnJMyt5Ihqi7rWJr5N8cf"
+    ],
+    "template_type": "template_workflow.workflow_with_automation_rule"
+  },
+  "rules": {
+    "ruleschedule_02QYT825B665I0QVoJdRdmI7i5Q0KoeV9aF": {
+      "name": "EveryWeekOnMonday",
+      "title": "EveryWeekOnMonday",
+      "type": "schedule.rule_schedule",
+      "rule_type": "rule_schedule",
+      "base_type": "rule",
+      "object_type": "ruleschedule",
+      "version": "1.0.0",
+      "properties": {
+        "calendar": "calendar_recurring_1BMfMeHT9BLcMorjZ6d827zXeaV",
+        "description": "",
+        "display_name": "EveryWeekOnMonday",
+        "interval_hours": 0,
+        "interval_minutes": 0,
+        "number_of_times": 1,
+        "rule_type": "rule_schedule",
+        "starttime": "07:00",
+        "timezone": "Europe/Amsterdam",
+        "title": "EveryWeekOnMonday",
+        "workflows_config": [
+          {
+            "disabled": false,
+            "ref_id": "definition_workflow_02QY5FG0O6YFH1qJp9f6V3jduQwVvHQpb9j",
+            "status": {
+              "state": "started-polling",
+              "prev_state": "started-polling",
+              "error_msg": ""
+            }
+          }
+        ]
+      },
+      "disabled": false,
+      "unique_name": "ruleschedule_02QYT825B665I0QVoJdRdmI7i5Q0KoeV9aF"
+    }
+  },
+  "targets": {
+    "definition_target_02QXXSEFV7WTY1okQgfbwGhKiAxBlTYr1cY": {
+      "unique_name": "definition_target_02QXXSEFV7WTY1okQgfbwGhKiAxBlTYr1cY",
+      "name": "ise1",
+      "title": "ise1",
+      "type": "ise.endpoint",
+      "base_type": "target",
+      "object_type": "definition_target",
+      "properties": {
+        "_host": "172.16.80.11",
+        "_port": 443,
+        "_tls_insecure": true,
+        "ao_remote_id": "02QXR0NCW19W74QGDERsCGVdTTTO7pZM5BZ",
+        "default_runtime_user_id": "definition_runtime_user_02QX1Q6C95FWE0w7VtgJ6Umk1Ihi0hHgqJG",
+        "display_name": "ise1",
+        "ignore_proxy": true,
+        "is_https_proxy": false
+      }
+    },
+    "definition_target_02QYLF02C6XCH3J0Fttx8ovUCGDpoJUDLMi": {
+      "unique_name": "definition_target_02QYLF02C6XCH3J0Fttx8ovUCGDpoJUDLMi",
+      "name": "RLworkflowsBOT",
+      "title": "RLworkflowsBOT",
+      "type": "web-service.endpoint",
+      "base_type": "target",
+      "object_type": "definition_target",
+      "properties": {
+        "disable_certificate_validation": false,
+        "display_name": "RLworkflowsBOT",
+        "host": "webexapis.com",
+        "ignore_proxy": false,
+        "is_https_proxy": false,
+        "no_runtime_user": true,
+        "path": "/v1/",
+        "port": 443,
+        "protocol": "https"
+      }
+    }
+  },
+  "runtime_users": {
+    "definition_runtime_user_02QX1Q6C95FWE0w7VtgJ6Umk1Ihi0hHgqJG": {
+      "unique_name": "definition_runtime_user_02QX1Q6C95FWE0w7VtgJ6Umk1Ihi0hHgqJG",
+      "name": "admin",
+      "title": "admin",
+      "type": "runtime_user.ise_basic_credentials",
+      "base_type": "runtime_user",
+      "object_type": "definition_runtime_user",
+      "properties": {
+        "_password": "*****",
+        "_username": "admin",
+        "description": "admin account",
+        "display_name": "admin"
+      }
+    }
+  },
+  "variables": {
+    "variable_02QYLJRMMZ2XP0bfgB3z5SAXXGyt9RZpGim": {
+      "unique_name": "variable_02QYLJRMMZ2XP0bfgB3z5SAXXGyt9RZpGim",
+      "properties": {
+        "value": "*****",
+        "scope": "env",
+        "name": "Webex_workflows_BOT_Bearer",
+        "type": "datatype.secure_string",
+        "is_required": false,
+        "display_on_wizard": false,
+        "is_invisible": false,
+        "variable_string_format": ""
+      },
+      "object_type": "variable"
+    },
+    "variable_02QYN70EK94BU6EgmR87YokDT4TDZJ7s5zu": {
+      "unique_name": "variable_02QYN70EK94BU6EgmR87YokDT4TDZJ7s5zu",
+      "properties": {
+        "value": "8adb17c8-9ab9-4294-bb70-fdab0cf01834",
+        "scope": "env",
+        "name": "ISEGuest_Portal_Id",
+        "type": "datatype.string",
+        "is_required": false,
+        "display_on_wizard": false,
+        "is_invisible": false,
+        "variable_string_format": "text"
+      },
+      "object_type": "variable"
+    }
+  },
+  "remotemetas": {
+    "remote_meta_02QXR0ND9EJRS3wf9mMkTlAAFsZg3Dr0eKJ": {
+      "base_type": "remote_meta",
+      "type": "generic.remote_meta",
+      "name": "Rollelab-target",
+      "title": "Rollelab-target",
+      "description": "rollelab worflow remote ",
+      "version": "1.0.0",
+      "properties": {
+        "advanced": {
+          "remote_cluster_subnet": "10.42.0.0/16",
+          "remote_service_subnet": "10.43.0.0/16",
+          "require_advanced": true
+        },
+        "cloud_type": "vmware",
+        "description": "rollelab worflow remote ",
+        "display_name": "Rollelab-target",
+        "network": {
+          "is_dhcp": true
+        },
+        "proxy": {
+          "require_proxy": false
+        }
+      },
+      "unique_name": "remote_meta_02QXR0ND9EJRS3wf9mMkTlAAFsZg3Dr0eKJ",
+      "object_type": "remote_meta"
+    }
+  }
+}
